@@ -11,7 +11,7 @@ import fetch from 'jest-fetch-mock';
 import { runSaga } from 'redux-saga';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import toJson from 'enzyme-to-json';
+import configureStore from 'redux-mock-store'
 import rootReducer from './src/redux/rootReducers';
 
 const dom = new JSDOM(`<!DOCTYPE html><html lang="en"><head></head><body></body></html>`);
@@ -63,17 +63,14 @@ global.mountRender = Component => {
   return mount(Component);
 };
 
-global.shallowSmart = (Component, props) => {
+global.shallowSmart = (Component, props, initialState = {}) => {
+  const mockStore = configureStore();
+  const store = mockStore(initialState);
   const mockProps = { ...props };
 
-  const core = store ? 
-    <Provider store={store}>
-      <Component {...mockProps} />
-    </Provider>
-    : 
-    <Component {...mockProps} />;
+  const wrapper = <Provider store={store}><Component {...mockProps} /></Provider>;
 
-  return renderer.create(core).toJSON();
+  return renderer.create(wrapper).toJSON();
 };
 
 global.recordSaga = async (saga, initialAction) => {
